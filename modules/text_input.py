@@ -2,7 +2,7 @@ import streamlit as st
 from utils.medical_data import COMMON_CONDITIONS, COMMON_ALLERGIES
 import sys
 import os
-from modules.display_nutrition_plan import display_nutrition_plan
+from modules.display_plan import display_plan_with_tabs
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utils.config import generate_text_response
@@ -160,7 +160,7 @@ def handle_text_input(model):
                     st.markdown("## 🌿 Your Holistic Nutrition Plan")
                     st.markdown("---")
                     if response:
-                        display_nutrition_plan(response)
+                        display_plan_with_tabs(model, response)
                 except Exception as e:
                     st.error(f"Error generating plan: {e}")
     """Handle all text input processing and display"""
@@ -176,7 +176,7 @@ def handle_text_input(model):
                 response = generate_text_response(model, user_text)
                 st.markdown("### 📄 Nutrition Plan")
                 if response:
-                        display_nutrition_plan(response)
+                        display_plan_with_tabs(model, response)
             except Exception as e:
                 st.error(f"Error generating nutrition plan: {e}")
                 return False
