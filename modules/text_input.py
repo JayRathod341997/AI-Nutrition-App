@@ -2,6 +2,7 @@ import streamlit as st
 from utils.medical_data import COMMON_CONDITIONS, COMMON_ALLERGIES
 import sys
 import os
+from modules.display_nutrition_plan import display_nutrition_plan
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from utils.config import generate_text_response
@@ -129,12 +130,37 @@ def handle_text_input(model):
                     2. Exclude: {', '.join(all_allergies) if all_allergies else 'None'}
                     3. Optimize for: {', '.join(health_goals)}
                     4. Match activity level: {fitness_routine}
+                    
+                    Please structure the 7-day meal plan EXACTLY like this:
+
+                    === Day 1 ===
+                    Breakfast: [meal name] - [portion]
+                    - Ingredients: [list]
+                    - Nutrition: [calories, macros]
+                    - Instructions: [steps]
+
+                    Lunch: [meal name] - [portion]
+                    - Ingredients: [list]
+                    - Nutrition: [calories, macros]
+                    - Instructions: [steps]
+
+                    Dinner: [meal name] - [portion]
+                    - Ingredients: [list]
+                    - Nutrition: [calories, macros]
+                    - Instructions: [steps]
+
+                    Snacks: [options]
+
+                    === Day 2 ===
+                    [repeat same structure]
+                    ...
                     """
                     
                     response = generate_text_response(model, prompt)
                     st.markdown("## 🌿 Your Holistic Nutrition Plan")
                     st.markdown("---")
-                    st.write(response)
+                    if response:
+                        display_nutrition_plan(response)
                 except Exception as e:
                     st.error(f"Error generating plan: {e}")
     """Handle all text input processing and display"""
@@ -149,7 +175,8 @@ def handle_text_input(model):
             try:
                 response = generate_text_response(model, user_text)
                 st.markdown("### 📄 Nutrition Plan")
-                st.write(response)
+                if response:
+                        display_nutrition_plan(response)
             except Exception as e:
                 st.error(f"Error generating nutrition plan: {e}")
                 return False
