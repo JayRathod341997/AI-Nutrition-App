@@ -9,7 +9,7 @@ from utils.config import generate_text_response
 def handle_text_input(model):
     """Handle all text input processing and display"""
     with st.expander("➕ Provide Your Details", expanded=True):
-        col1, col2 = st.columns(2)
+        col1, col2 , col3 = st.columns(3)
         
         with col1:
             # Personal Details
@@ -17,42 +17,6 @@ def handle_text_input(model):
             age = st.number_input("Age", min_value=1, max_value=120, value=30)
             gender = st.selectbox("Gender", ["Male", "Female"])
             lifestyle = st.selectbox("Lifestyle", ["Sedentary", "Moderately Active", "Very Active", "Athlete"])
-            
-            # Health Conditions
-            st.subheader("Health Information")
-            medical_conditions = st.multiselect(
-                "Medical Conditions",
-                options=COMMON_CONDITIONS,
-                default=[],
-                help="Select all that apply",
-                key="medical_conditions"
-            )
-            
-            # Custom condition input
-            other_condition = st.text_input(
-                "Other Condition (specify)",
-                key="other_condition",
-                placeholder="Add condition not listed"
-            )
-            
-            # Updated Allergies Section
-            allergies = st.multiselect(
-                "Food Allergies/Intolerances",
-                options=COMMON_ALLERGIES,
-                default=[],
-                help="Select all that apply",
-                key="allergies"
-            )
-            
-            # Custom allergy input
-            other_allergy = st.text_input(
-                "Other Allergy (specify)",
-                key="other_allergy",
-                placeholder="Add allergy not listed"
-            )
-            
-            medications = st.text_area("Current Medications")
-        
         with col2:
             # Goals & Preferences
             st.subheader("Goals & Preferences")
@@ -90,7 +54,41 @@ def handle_text_input(model):
             )
        
             cooking_ability = st.select_slider("Cooking Skill Level", ["Beginner", "Intermediate", "Advanced"])
-    
+        with col3:
+             # Health Conditions
+            st.subheader("Health Information")
+            medical_conditions = st.multiselect(
+                "Medical Conditions",
+                options=COMMON_CONDITIONS,
+                default=[],
+                help="Select all that apply",
+                key="medical_conditions"
+            )
+            
+            # Custom condition input
+            other_condition = st.text_input(
+                "Other Condition (specify)",
+                key="other_condition",
+                placeholder="Add condition not listed"
+            )
+            
+            # Updated Allergies Section
+            allergies = st.multiselect(
+                "Food Allergies/Intolerances",
+                options=COMMON_ALLERGIES,
+                default=[],
+                help="Select all that apply",
+                key="allergies"
+            )
+            
+            # Custom allergy input
+            other_allergy = st.text_input(
+                "Other Allergy (specify)",
+                key="other_allergy",
+                placeholder="Add allergy not listed"
+            )
+            
+            medications = st.text_area("Current Medications")
     if st.button("Generate Personalized Nutrition Plan", type="primary"):
         all_conditions = medical_conditions
         if other_condition:
