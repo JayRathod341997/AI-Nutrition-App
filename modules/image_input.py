@@ -15,7 +15,9 @@ def handle_image_input(model):
     
     if uploaded_image:
         image = Image.open(uploaded_image)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+        st.image(image, caption="Uploaded Image",  
+                 width=300,  # Fixed width in pixels
+                 output_format="PNG"  )# Ensures consistent display)
         
         with st.spinner("Analyzing image and generating nutrition insights..."):
             try:
