@@ -1,4 +1,5 @@
 import streamlit as st
+from utils.medical_data import COMMON_CONDITIONS, COMMON_ALLERGIES
 import sys
 import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
@@ -15,15 +16,43 @@ def handle_text_input(model):
             st.subheader("Personal Information")
             age = st.number_input("Age", min_value=1, max_value=120, value=30)
             gender = st.selectbox("Gender", ["Male", "Female"])
-            cultural_background = st.text_input("Cultural/Ethnic Background")
             lifestyle = st.selectbox("Lifestyle", ["Sedentary", "Moderately Active", "Very Active", "Athlete"])
             
             # Health Conditions
             st.subheader("Health Information")
-            medical_conditions = st.text_area("Medical Conditions (e.g. diabetes, hypertension)")
-            allergies = st.text_area("Food Allergies/Intolerances")
-            medications = st.text_area("Current Medications")
+            medical_conditions = st.multiselect(
+                "Medical Conditions",
+                options=COMMON_CONDITIONS,
+                default=[],
+                help="Select all that apply",
+                key="medical_conditions"
+            )
             
+            # Custom condition input
+            other_condition = st.text_input(
+                "Other Condition (specify)",
+                key="other_condition",
+                placeholder="Add condition not listed"
+            )
+            
+            # Updated Allergies Section
+            allergies = st.multiselect(
+                "Food Allergies/Intolerances",
+                options=COMMON_ALLERGIES,
+                default=[],
+                help="Select all that apply",
+                key="allergies"
+            )
+            
+            # Custom allergy input
+            other_allergy = st.text_input(
+                "Other Allergy (specify)",
+                key="other_allergy",
+                placeholder="Add allergy not listed"
+            )
+            
+            medications = st.text_area("Current Medications")
+        
         with col2:
             # Goals & Preferences
             st.subheader("Goals & Preferences")
@@ -59,10 +88,18 @@ def handle_text_input(model):
                 ["Vegetarian", "Vegan", "Pescatarian", "Gluten-free", 
                  "Dairy-free", "Keto", "Mediterranean", "Other"]
             )
-            other_preferences = st.text_area("Other Food Preferences/Aversions")
+       
             cooking_ability = st.select_slider("Cooking Skill Level", ["Beginner", "Intermediate", "Advanced"])
     
     if st.button("Generate Personalized Nutrition Plan", type="primary"):
+        all_conditions = medical_conditions
+        if other_condition:
+            all_conditions.append(other_condition)
+
+        all_allergies = allergies
+        if other_allergy:
+            all_allergies.append(other_allergy)
+            
         if not health_goals:
             st.warning("Please at least specify your health goals")
         else:
@@ -70,33 +107,30 @@ def handle_text_input(model):
                 try:
                     # Construct comprehensive prompt
                     prompt = f"""
-                    Create a detailed, personalized nutrition plan for:
+                    Create a detailed nutrition plan for:
                     - Age: {age}
                     - Gender: {gender}
-                    - Cultural background: {cultural_background}
+                    - Conditions: {', '.join(all_conditions) if all_conditions else 'None'}
+                    - Allergies: {', '.join(all_allergies) if all_allergies else 'None'}
+                    - Medications: {medications if medications else 'None'}
+                    - Goals: {', '.join(health_goals)}
+                    - Fitness: {fitness_routine}
+                    - Preferences: {', '.join(dietary_preferences) if dietary_preferences else 'None'}
+                    - Cooking Skill: {cooking_ability}
                     - Lifestyle: {lifestyle}
-                    - Medical conditions: {medical_conditions}
-                    - Allergies/Intolerances: {allergies}
-                    - Medications: {medications}
-                    - Health goals: {health_goals}
-                    - Fitness routine: {fitness_routine}
-                    - Dietary preferences: {', '.join(dietary_preferences)}
-                    - Other preferences: {other_preferences}
-                    - Cooking ability: {cooking_ability}
+                    Provide a 7-day meal plan with:
+                    - Breakfast, Lunch, Dinner, and Snacks
+                    - Portion sizes
+                    - Nutritional breakdown (calories, macros)
+                    - Cooking instructions
+                    - Grocery list
 
-                    The plan should:
-                    1. Address all health conditions and medications
-                    2. Respect cultural food preferences
-                    3. Align with stated lifestyle and fitness routine
-                    4. Provide meal suggestions matching cooking ability
-                    5. Include nutrient timing recommendations
-                    6. Suggest alternatives for allergies
-                    7. Address the stated health goals
-                    8. Provide gradual improvement phases
-                    9. Include hydration recommendations
-                    10. Suggest supplements if appropriate
 
-                    Format the plan with clear sections and practical advice.
+                    Requirements:
+                    1. Avoid contraindications for: {', '.join(all_conditions) if all_conditions else 'None'}
+                    2. Exclude: {', '.join(all_allergies) if all_allergies else 'None'}
+                    3. Optimize for: {', '.join(health_goals)}
+                    4. Match activity level: {fitness_routine}
                     """
                     
                     response = generate_text_response(model, prompt)
