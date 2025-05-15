@@ -10,7 +10,7 @@ st.set_page_config(page_title="AI Nutrition Assistant", layout="wide")
 st.title("🥗 The Smartest AI Nutrition Assistant")
 
 # Create tabs
-tab1, tab2 , tab3 = st.tabs(["📄 Nutrition Plan", "🧠 Food Analysis", "Personalized Health Assistant with RAG"])
+tab1, tab2 , tab3 = st.tabs(["📄 Nutrition Plan", "🧠 Food Analysis", "🩺 Personalized Health Assistant with RAG"])
 
 # Process inputs in respective tabs
 with tab1:
