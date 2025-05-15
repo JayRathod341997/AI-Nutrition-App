@@ -117,6 +117,7 @@ def handle_text_input(model):
                     - Preferences: {', '.join(dietary_preferences) if dietary_preferences else 'None'}
                     - Cooking Skill: {cooking_ability}
                     - Lifestyle: {lifestyle}
+                    - Country : India
                     Provide a 7-day meal plan with:
                     - Breakfast, Lunch, Dinner, and Snacks
                     - Portion sizes
