@@ -9,8 +9,17 @@ from utils.config import generate_text_response
 
 def handle_text_input(model):
     """Handle all text input processing and display"""
-    with st.expander("➕ Provide Your Details", expanded=True):
-        col1, col2 , col3 = st.columns(3)
+    # Sidebar text input
+    st.sidebar.header("Quick Input Option")
+    user_text = st.sidebar.text_area(
+        "Or enter your details here (health goals, conditions, preferences, etc.)", 
+        height=150,
+        key="sidebar_text"
+    )
+    
+    # Main form input
+    with st.expander("➕ Provide Your Details (Fill Form Below)", expanded=True):
+        col1, col2, col3 = st.columns(3)
         
         with col1:
             # Personal Details
@@ -18,6 +27,7 @@ def handle_text_input(model):
             age = st.number_input("Age", min_value=1, max_value=120, value=30)
             gender = st.selectbox("Gender", ["Male", "Female"])
             lifestyle = st.selectbox("Lifestyle", ["Sedentary", "Moderately Active", "Very Active", "Athlete"])
+        
         with col2:
             # Goals & Preferences
             st.subheader("Goals & Preferences")
@@ -53,10 +63,10 @@ def handle_text_input(model):
                 ["Vegetarian", "Vegan", "Pescatarian", "Gluten-free", 
                  "Dairy-free", "Keto", "Mediterranean", "Other"]
             )
-       
             cooking_ability = st.select_slider("Cooking Skill Level", ["Beginner", "Intermediate", "Advanced"])
+        
         with col3:
-             # Health Conditions
+            # Health Conditions
             st.subheader("Health Information")
             medical_conditions = st.multiselect(
                 "Medical Conditions",
@@ -73,7 +83,7 @@ def handle_text_input(model):
                 placeholder="Add condition not listed"
             )
             
-            # Updated Allergies Section
+            # Allergies Section
             allergies = st.multiselect(
                 "Food Allergies/Intolerances",
                 options=COMMON_ALLERGIES,
@@ -90,22 +100,36 @@ def handle_text_input(model):
             )
             
             medications = st.text_area("Current Medications")
-    if st.button("Generate Personalized Nutrition Plan", type="primary"):
-        all_conditions = medical_conditions
-        if other_condition:
-            all_conditions.append(other_condition)
 
-        all_allergies = allergies
-        if other_allergy:
-            all_allergies.append(other_allergy)
-            
-        if not health_goals:
-            st.warning("Please at least specify your health goals")
-        else:
-            with st.spinner("Creating your holistic nutrition plan..."):
-                try:
-                    # Construct comprehensive prompt
+    # Generate button
+    prompt = ""
+    if st.button("Generate Personalized Nutrition Plan", type="primary"):
+        with st.spinner("Creating your holistic nutrition plan..."):
+            try:
+                # Prepare data from form
+                all_conditions = medical_conditions.copy()
+                if other_condition:
+                    all_conditions.append(other_condition)
+
+                all_allergies = allergies.copy()
+                if other_allergy:
+                    all_allergies.append(other_allergy)
+                
+                # If user provided text input, use that primarily
+                if user_text.strip():
                     prompt = f"""
+                    Create a detailed nutrition plan based on the following information:
+                    
+                    USER PROVIDED TEXT:
+                    {user_text}
+                    """
+                
+                    # Use form data only if no text input
+                if not health_goals:
+                    st.warning("Please at least specify your health goals")
+                    return
+                    
+                prompt += f"""
                     Create a detailed nutrition plan for:
                     - Age: {age}
                     - Gender: {gender}
@@ -117,7 +141,8 @@ def handle_text_input(model):
                     - Preferences: {', '.join(dietary_preferences) if dietary_preferences else 'None'}
                     - Cooking Skill: {cooking_ability}
                     - Lifestyle: {lifestyle}
-                    - Country : India
+                    - Country: India
+                    
                     Provide a 7-day meal plan with:
                     - Breakfast, Lunch, Dinner, and Snacks
                     - Portion sizes
@@ -125,15 +150,13 @@ def handle_text_input(model):
                     - Cooking instructions
                     - Grocery list
 
-
                     Requirements:
                     1. Avoid contraindications for: {', '.join(all_conditions) if all_conditions else 'None'}
                     2. Exclude: {', '.join(all_allergies) if all_allergies else 'None'}
                     3. Optimize for: {', '.join(health_goals)}
                     4. Match activity level: {fitness_routine}
                     
-                    Please structure the 7-day meal plan EXACTLY like this:
-
+                    Please structure the response clearly with day-by-day sections.
                     === Day 1 ===
                     Breakfast: [meal name] - [portion]
                     - Ingredients: [list]
@@ -154,32 +177,19 @@ def handle_text_input(model):
 
                     === Day 2 ===
                     [repeat same structure]
-                    ...
+                   
                     """
-                    
-                    response = generate_text_response(model, prompt)
-                    st.markdown("## 🌿 Your Holistic Nutrition Plan")
-                    st.markdown("---")
-                    if response:
-                        display_plan_with_tabs(model, response)
-                except Exception as e:
-                    st.error(f"Error generating plan: {e}")
-    """Handle all text input processing and display"""
-    st.sidebar.header("Text Input")
-    user_text = st.sidebar.text_area(
-        "Enter your health goals, medical conditions, food preferences, etc.", 
-        height=150
-    )
-    
-    if user_text:
-        with st.spinner("Generating personalized plan..."):
-            try:
-                response = generate_text_response(model, user_text)
-                st.markdown("### 📄 Nutrition Plan")
+                
+                response = generate_text_response(model, prompt)
+                print(f"Generated response: {response}")  # Debugging output
+                st.markdown("## 🌿 Your Holistic Nutrition Plan")
+                st.markdown("---")
                 if response:
-                        display_plan_with_tabs(model, response)
+                    display_plan_with_tabs(model, response)
+            
             except Exception as e:
-                st.error(f"Error generating nutrition plan: {e}")
+                st.error(f"Error generating plan: {str(e)}")
                 return False
+        
         return True
     return False
